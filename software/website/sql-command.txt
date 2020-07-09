@@ -1,0 +1,9 @@
+CREATE TABLE logsensor (
+    id_data INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    waktu TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    suhu_udara VARCHAR(8),
+    kelembaban_udara VARCHAR(8),
+    kelembaban_tanah VARCHAR(8),
+    status_pompa VARCHAR(2),
+    status_kipas VARCHAR(2)
+)
