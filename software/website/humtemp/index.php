@@ -48,7 +48,13 @@
 				<?php
             $hasil = mysqli_query($dbc, "SELECT waktu FROM logsensor ORDER BY id_data DESC LIMIT 1");
             $hasil = $hasil->fetch_object()->waktu;
-            echo $hasil;
+            $phpdate = strtotime( $hasil );
+            
+            $date = new DateTime("@$phpdate");
+            $timezone = new DateTimeZone('Asia/Jakarta');
+            $date->setTimeZone($timezone);
+            
+            echo $date->format('Y-m-d H:i:s') . '<br/>';            
           ?>
 			</span>
 		</h4>
@@ -170,9 +176,15 @@
                   array_push($datalabels, $baris[1]);
                   array_push($valuelabels, $baris[2]);
 
+                  $phpdate = strtotime( $baris[1] );
+                  
+                  $date = new DateTime("@$phpdate");
+                  $timezone = new DateTimeZone('Asia/Jakarta');
+                  $date->setTimeZone($timezone);
+                  
                   $id         += 1;
                   $id_data    = $baris[0];
-                  $waktu      = $baris[1];
+                  $waktu      = $date->format('Y-m-d H:i:s');
                   $suhu_udara  = $baris[2];
                   $kelembaban_udara  = $baris[3];
                   $kelembaban_tanah  = $baris[4];
