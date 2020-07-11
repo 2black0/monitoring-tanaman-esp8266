@@ -11,7 +11,7 @@
 #define DHTTYPE DHT11
 
 // waktu pengiriman ke server 60000ms = 60s = 1m
-#define timersend 120000
+#define timersend 60000
 
 // ganti sesuai yang dipakai
 const char *ssid = "Wifi-Roboto";                    // ganti wifi
@@ -31,9 +31,9 @@ const int fanPin = D6;
 float SoilHumidity;
 float Temperature;
 float Humidity;
-int statusPump = 0;
-int statusFan = 0;
-int statusSend = 0;
+bool statusPump = true;
+bool statusFan = true;
+bool statusSend = false;
 
 uint8_t connection_state = 0;
 uint16_t reconnect_interval = 10000;
@@ -108,25 +108,31 @@ void setup()
   digitalWrite(fanPin, HIGH);
 
   dht.begin();
-  serial_show("Turbidity WeMoS D1 Mini", 1);
-  lcd_show(1, "Turbidity", 0, 0, "WeMoS D1 Mini", 0, 1, 1000);
+  delay(1000);
+  serial_show("Sistem Monitoring Tanaman", 1);
+  lcd_show(1, "Monitoring", 0, 0, "Tanaman", 0, 1, 1000);
 
   connection_state = WiFiConnect(ssid, password);
   if (!connection_state)
     Awaits();
 
-  timer.setInterval(timersend, send_http);
+  timer.setInterval(timersend, update_data);
 }
 
 // fungsi utama
 void loop()
 {
-  /*
-  digitalWrite(pumpPin, LOW);
-  digitalWrite(fanPin, LOW);
-  digitalWrite(pumpPin, HIGH);
-  digitalWrite(fanPin, HIGH);
+  /*read_dht11();
+  read_soilhum();
+  serial_show("T:" + String(Temperature) + "*C", 1);
+  serial_show("H:" + String(Humidity) + "%", 1);
+  serial_show("HS:" + String(SoilHumidity) + "%", 1);
+  serial_show("P:" + String(statusPump), 1);
+  serial_show("F:" + String(statusFan), 1);
+  lcd_show(1, "T:" + String(Temperature) + " H:" + String(Humidity), 0, 0, "HS:" + String(SoilHumidity) + " " + String(statusPump) + " " + String(statusFan), 0, 1, 1);
+  delay(1000);*/
 
+  /*
   1. Pompa
   On -> saat tanah kering (0-35)
   Off-> saat tanah lembab (40-70), tanah basah (75-100)
@@ -142,43 +148,56 @@ void loop()
   read_soilhum();
 
   // kondisi pompa
-  if (SoilHumidity > 35) // pompa off
-  {
-    digitalWrite(pumpPin, HIGH);
-    statusPump = 0;
-  }
   if (SoilHumidity <= 35 || Temperature >= 34) // pompa on
   {
-    digitalWrite(pumpPin, LOW);
-    statusPump = 1;
+    serial_show("Pump ON", 1);
+    if (statusPump == true)
+    {
+      statusPump = false;
+      update_data();
+    }
   }
+  else if (SoilHumidity > 35) // pompa off
+  {
+    serial_show("Pump OFF", 1);
+    if (statusPump == false)
+    {
+      statusPump = true;
+      update_data();
+    }
+  }
+  digitalWrite(pumpPin, statusPump);
 
   // kondisi fan
-  if (Temperature < 34 || Humidity < 40) // fan off
+  if (Temperature >= 34 || Humidity >= 65) // fan on
   {
-    digitalWrite(fanPin, HIGH);
-    statusFan = 0;
+    serial_show("Fan ON", 1);
+    if (statusFan == true)
+    {
+      statusFan = false;
+      update_data();
+    }
   }
-  if (Temperature >= 34 || Humidity >= 40) // fan on
+  else if (Temperature < 34 || Humidity < 65) // fan off
   {
-    digitalWrite(fanPin, LOW);
-    statusFan = 1;
+    serial_show("Fan OFF", 1);
+    if (statusFan == false)
+    {
+      statusFan = true;
+      update_data();
+    }
   }
-
-  /*if (statusSend == 1)
-  {
-    send_http();
-    statusSend = 0;
-  }*/
+  digitalWrite(fanPin, statusFan);
 
   serial_show("T:" + String(Temperature) + "*C", 1);
   serial_show("H:" + String(Humidity) + "%", 1);
   serial_show("HS:" + String(SoilHumidity) + "%", 1);
-  serial_show("P:" + String(statusPump), 1);
-  serial_show("F:" + String(statusFan), 1);
-  lcd_show(1, "T:" + String(Temperature) + " H:" + String(Humidity), 0, 0, "HS:" + String(SoilHumidity) + " " + String(statusPump) + " " + String(statusFan), 0, 1, 1);
+  //serial_show("P:" + String(!statusPump), 1);
+  //serial_show("F:" + String(!statusFan), 1);
+  lcd_show(1, "T:" + String(Temperature) + " H:" + String(Humidity), 0, 0, "HS:" + String(SoilHumidity) + " P:" + String(!statusPump) + " F:" + String(!statusFan), 0, 1, 1);
 
-  delay(10000);
+  delay(5000);
+  serial_show("************************", 1);
 }
 
 // fungsi untuk menampilkan ke lcd
@@ -229,18 +248,28 @@ void read_soilhum()
   float value;
   SoilHumidity = 0;
 
-  for (int i = 0; i < 500; i++)
+  for (int i = 0; i < 100; i++)
   {
     value = analogRead(soilhumPin);
     totalValue += value;
     value = 0;
+    delay(1);
   }
 
-  SoilHumidity = totalValue / 500;
+  SoilHumidity = totalValue / 100;
+  SoilHumidity = map(SoilHumidity, 100, 137, 100, 0);
+  if (SoilHumidity <= 0)
+  {
+    SoilHumidity = 0;
+  }
+  if (SoilHumidity >= 100)
+  {
+    SoilHumidity = 100;
+  }
 }
 
 // fungsi untuk kirim ke database
-void send_http()
+void update_data()
 {
   //http://192.168.1.4/humtemp/save.php?temp=56&huma=99&hums=20&pump=1&fan=1
   String temp, huma, hums, pump, fan;
@@ -248,14 +277,14 @@ void send_http()
   temp = "temp=" + String(Temperature);
   huma = "&huma=" + String(Humidity);
   hums = "&hums=" + String(SoilHumidity);
-  pump = "&pump=" + String(statusPump);
-  fan = "&fan=" + String(statusFan);
+  pump = "&pump=" + String(!statusPump);
+  fan = "&fan=" + String(!statusFan);
   url = url + temp + huma + hums + pump + fan;
 
   if (WiFi.status() == WL_CONNECTED)
   {
-    serial_show("Send to Server", 1);
-    lcd_show(1, "Send to Server", 0, 0, "", 0, 1, 1000);
+    serial_show("Send to Web", 1);
+    lcd_show(1, "Send to Web", 0, 0, " ", 0, 1, 1000);
     HTTPClient http;
 
     http.begin(url);
@@ -265,7 +294,7 @@ void send_http()
     {
       String payload = http.getString();
       serial_show(payload, 1);
-      lcd_show(1, payload, 0, 0, "", 0, 1, 1000);
+      lcd_show(0, "Send to Web", 0, 0, payload, 0, 1, 1000);
     }
 
     http.end();
