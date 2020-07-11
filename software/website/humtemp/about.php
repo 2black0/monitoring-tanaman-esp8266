@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="css/bootstrap.min.css">
 
 
-    <title>Simple Dashboard IoT</title>
+    <title>Sistem Monitoring Tanaman</title>
   </head>
 
   <body>

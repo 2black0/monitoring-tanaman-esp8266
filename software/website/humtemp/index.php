@@ -44,14 +44,27 @@
 			</div>
 		</div>
 
-		<h4>Waktu Update <span class="badge badge-secondary">2020-07-08 07:00:00</span></h4>
+		<h4>Waktu Update <span class="badge badge-secondary">
+				<?php
+            $hasil = mysqli_query($dbc, "SELECT waktu FROM logsensor ORDER BY id_data DESC LIMIT 1");
+            $hasil = $hasil->fetch_object()->waktu;
+            echo $hasil;
+          ?>
+			</span>
+		</h4>
 
 		<div class="row text-center">
 			<div class="col-md">
 				<div class="card" style="width: 12rem;">
 					<div class="card-body">
 						<h5 class="card-title"> Suhu <br> Udara</h5>
-						<h1 class="card-text">22°C</h1>
+						<h1 class="card-text">
+							<?php
+                  $hasil = mysqli_query($dbc, "SELECT suhu_udara FROM logsensor ORDER BY id_data DESC LIMIT 1");
+                  $hasil = $hasil->fetch_object()->suhu_udara;
+                  printf("%.1f °C", $hasil);
+                ?>
+						</h1>
 					</div>
 				</div>
 			</div>
@@ -60,7 +73,13 @@
 				<div class="card" style="width: 12rem;">
 					<div class="card-body">
 						<h5 class="card-title">Kelembaban Udara</h5>
-						<h1 class="card-text">90%</h1>
+						<h1 class="card-text">
+							<?php
+                  $hasil = mysqli_query($dbc, "SELECT kelembaban_udara FROM logsensor ORDER BY id_data DESC LIMIT 1");
+                  $hasil = $hasil->fetch_object()->kelembaban_udara;
+                  printf("%d %%", $hasil);
+              ?>
+						</h1>
 					</div>
 				</div>
 			</div>
@@ -69,7 +88,13 @@
 				<div class="card" style="width: 12rem;">
 					<div class="card-body">
 						<h5 class="card-title">Kelembaban Tanah</h5>
-						<h1 class="card-text">20%</h1>
+						<h1 class="card-text">
+							<?php
+                $hasil = mysqli_query($dbc, "SELECT kelembaban_tanah FROM logsensor ORDER BY id_data DESC LIMIT 1");
+                $hasil = $hasil->fetch_object()->kelembaban_tanah;
+                printf("%d %%", $hasil);
+              ?>
+						</h1>
 					</div>
 				</div>
 			</div>
@@ -78,7 +103,17 @@
 				<div class="card" style="width: 12rem;">
 					<div class="card-body">
 						<h5 class="card-title">Status Motor Pompa</h5>
-						<h1 class="card-text">OFF</h1>
+						<h1 class="card-text">
+							<?php
+                $hasil = mysqli_query($dbc, "SELECT status_pompa FROM logsensor ORDER BY id_data DESC LIMIT 1");
+                $hasil = $hasil->fetch_object()->status_pompa;
+                if ($hasil == 1) {
+                    printf("ON");
+                } else {
+                    printf("OFF");
+                }
+              ?>
+						</h1>
 					</div>
 				</div>
 			</div>
@@ -87,7 +122,17 @@
 				<div class="card" style="width: 12rem;">
 					<div class="card-body">
 						<h5 class="card-title">Status <br> Kipas</h5>
-						<h1 class="card-text">ON</h1>
+						<h1 class="card-text">
+							<?php
+                $hasil = mysqli_query($dbc, "SELECT status_kipas FROM logsensor ORDER BY id_data DESC LIMIT 1");
+                $hasil = $hasil->fetch_object()->status_kipas;
+                if ($hasil == 1) {
+                    printf("ON");
+                } else {
+                    printf("OFF");
+                }
+              ?>
+						</h1>
 					</div>
 				</div>
 			</div>
@@ -114,70 +159,81 @@
 					</thead>
 
 					<tbody>
-						<tr>
-							<td>1</td>
-							<td>2020-07-05 12:37:14</td>
-							<td>22°C</td>
-							<td>Sejuk</td>
-							<td>90%</td>
-							<td>Sangat Lembab</td>
-							<td>20%</td>
-							<td>Sangat Kering</td>
-							<td>OFF</td>
-							<td>ON</td>
-						</tr>
 
-						<tr>
-							<td>2</td>
-							<td>2020-07-05 12:37:14</td>
-							<td>22°C</td>
-							<td>Sejuk</td>
-							<td>90%</td>
-							<td>Sangat Lembab</td>
-							<td>20%</td>
-							<td>Sangat Kering</td>
-							<td>OFF</td>
-							<td>ON</td>
-						</tr>
+						<?php
+              $hasil = mysqli_query($dbc, "SELECT * FROM logsensor ORDER BY id_data DESC LIMIT 10");
+              $id = 0;
+              $status = "";
+              $datalabels = [];
+              $valuelabels = [];
+              while ($baris = mysqli_fetch_row($hasil)) {
+                  array_push($datalabels, $baris[1]);
+                  array_push($valuelabels, $baris[2]);
 
-						<tr>
-							<td>3</td>
-							<td>2020-07-05 12:37:14</td>
-							<td>22°C</td>
-							<td>Sejuk</td>
-							<td>90%</td>
-							<td>Sangat Lembab</td>
-							<td>20%</td>
-							<td>Sangat Kering</td>
-							<td>OFF</td>
-							<td>ON</td>
-						</tr>
+                  $id         += 1;
+                  $id_data    = $baris[0];
+                  $waktu      = $baris[1];
+                  $suhu_udara  = $baris[2];
+                  $kelembaban_udara  = $baris[3];
+                  $kelembaban_tanah  = $baris[4];
+                  $status_pompa  = $baris[5];
+                  $status_kipas  = $baris[6];
 
-						<tr>
-							<td>4</td>
-							<td>2020-07-05 12:37:14</td>
-							<td>22°C</td>
-							<td>Sejuk</td>
-							<td>90%</td>
-							<td>Sangat Lembab</td>
-							<td>20%</td>
-							<td>Sangat Kering</td>
-							<td>OFF</td>
-							<td>ON</td>
-						</tr>
+                  if ($suhu_udara > 36) {
+                      $status_suhu_udara = "Sangat Panas";
+                  } elseif ($suhu_udara >= 34 && $suhu_udara <= 36) {
+                      $status_suhu_udara = "Panas";
+                  } elseif ($suhu_udara >= 24 && $suhu_udara < 34) {
+                      $status_suhu_udara = "Normal";
+                  } elseif ($suhu_udara >= 18 && $suhu_udara < 23) {
+                      $status_suhu_udara = "Sejuk";
+                  } else {
+                      $status_suhu_udara = "Dingin";
+                  }
 
-						<tr>
-							<td>5</td>
-							<td>2020-07-05 12:37:14</td>
-							<td>22°C</td>
-							<td>Sejuk</td>
-							<td>90%</td>
-							<td>Sangat Lembab</td>
-							<td>20%</td>
-							<td>Sangat Kering</td>
-							<td>OFF</td>
-							<td>ON</td>
-						</tr>
+                  if ($kelembaban_udara > 70) {
+                      $status_kelembaban_udara = "Udara Basah";
+                  } elseif ($kelembaban_udara >= 35 && $kelembaban_udara <= 70) {
+                      $status_kelembaban_udara = "Udara Lembab";
+                  } else {
+                      $status_kelembaban_udara = "Udara Kering";
+                  }
+
+                  if ($kelembaban_tanah > 70) {
+                      $status_kelembaban_tanah = "Tanah Basah";
+                  } elseif ($kelembaban_tanah >= 35 && $kelembaban_tanah <= 70) {
+                      $status_kelembaban_tanah = "Tanah Lembab";
+                  } else {
+                      $status_kelembaban_tanah = "Tanah Kering";
+                  }
+
+                  if ($status_pompa == 1) {
+                      $status_pompa = "ON";
+                  } else {
+                      $status_pompa = "OFF";
+                  }
+
+                  if ($status_kipas == 1) {
+                      $status_kipas = "ON";
+                  } else {
+                      $status_kipas = "OFF";
+                  }
+
+                  echo "<tr>";
+                  echo "<td>$id</td>";
+                  echo "<td>$waktu</td>";
+                  echo "<td>$suhu_udara °C</td>";
+                  echo "<td>$status_suhu_udara</td>";
+                  echo "<td>$kelembaban_udara %</td>";
+                  echo "<td>$status_kelembaban_udara</td>";
+                  echo "<td>$kelembaban_tanah %</td>";
+                  echo "<td>$status_kelembaban_tanah</td>";
+                  echo "<td>$status_pompa</td>";
+                  echo "<td>$status_kipas</td>";
+                  echo "</tr>";
+              }
+            ?>
+
 					</tbody>
 				</table>
 			</div>
