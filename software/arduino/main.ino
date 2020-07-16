@@ -1,6 +1,6 @@
 // library yang dipakai
 #include <Arduino.h>
-#include <EMailSender.h>
+//#include <EMailSender.h>
 #include <ESP8266WiFi.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
@@ -169,7 +169,7 @@ void loop()
   digitalWrite(pumpPin, statusPump);
 
   // kondisi fan
-  if (Temperature >= 34 || Humidity >= 65) // fan on
+  if (Temperature >= 34 || Humidity >= 80) // fan on
   {
     serial_show("Fan ON", 1);
     if (statusFan == true)
@@ -178,7 +178,7 @@ void loop()
       update_data();
     }
   }
-  else if (Temperature < 34 || Humidity < 65) // fan off
+  else if (Temperature < 34 || Humidity < 80) // fan off
   {
     serial_show("Fan OFF", 1);
     if (statusFan == false)
@@ -257,7 +257,7 @@ void read_soilhum()
   }
 
   SoilHumidity = totalValue / 100;
-  SoilHumidity = map(SoilHumidity, 100, 137, 100, 0);
+  SoilHumidity = map(SoilHumidity, 124, 136, 100, 0);
   if (SoilHumidity <= 0)
   {
     SoilHumidity = 0;
